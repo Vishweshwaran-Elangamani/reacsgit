@@ -1,0 +1,67 @@
+import { useState } from "react";
+
+function CreateContact() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [contacts, setContacts] = useState([]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (name === "") {
+      alert("Enter name");
+      return;
+    }
+
+    fetch("http://localhost:3000/Contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email }),
+    }).then((res) => res.json());
+
+    setContacts([...contacts, { name, email }]);
+    setName("");
+    setEmail("");
+  };
+
+  const handleUpdate = (index) => {
+    const contact = contacts[index];
+    setName(contact.name);
+    setEmail(contact.email);
+  };
+
+  const handleDelete = (index) => {
+    setContacts(contacts.filter((_, i) => i !== index));
+  };
+
+  return (
+    <div>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Name"
+        />
+        <input
+          type="text"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email"
+        />
+        <button type="submit">Submit</button>
+      </form>
+
+      <ul>
+        {contacts.map((contact, index) => (
+          <li key={index}>
+            {contact.name} {contact.email}
+            <button onClick={() => handleUpdate(index)}>Update</button>
+            <button onClick={() => handleDelete(index)}>Delete</button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default CreateContact;

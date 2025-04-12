@@ -1,0 +1,130 @@
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import "./App.css";
+
+function App() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [names, setNames] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:3000/Contact")
+      .then((response) => {
+        setNames(response.data);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }, []);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    axios
+      .post("http://localhost:3000/Contact", {
+        name,
+        email,
+        phone,
+      })
+      .then((response) => {
+        setNames([...names, response.data]);
+        setName("");
+        setEmail("");
+        setPhone("");
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
+  const handleDelete = (id) => {
+    axios
+      .delete(`http://localhost:3000/Contact/${id}`)
+      .then(() => {
+        setNames(names.filter((name) => name.id !== id));
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
+  const handleUpdate = (id) => {
+    axios
+      .put(`http://localhost:3000/Contact/${id}`, {
+        name,
+        email,
+        phone,
+      })
+      .then((response) => {
+        setNames(
+          names.map((name) => {
+            if (name.id === id) {
+              return response.data;
+            }
+            return name;
+          })
+        );
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
+  return (
+    <div>
+      <form onSubmit={handleSubmit}>
+        <label>
+          Name:
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </label>
+        <label>
+          Email:
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </label>
+        <label>
+          Phone:
+          <input
+            type="text"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+          />
+        </label>
+        <button type="submit">Submit</button>
+      </form>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {names.map((name) => (
+            <tr key={name.id}>
+              <td>{name.name}</td>
+              <td>{name.email}</td>
+              <td>{name.phone}</td>
+              <td>
+                <button onClick={() => handleDelete(name.id)}>Delete</button>
+                <button onClick={() => handleUpdate(name.id)}>Update</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+export default App;
